@@ -1,0 +1,35 @@
+Install Homebrew (https://brew.sh/) : 
+
+    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
+
+install gtk2:
+    brew install gtk+
+
+install pkg-config
+    brew install pkg-config
+
+download the source of 1.15
+decompress the tar.gz by double clicking in finder
+in terminal, go to the folder that was created by the decompression
+
+run make
+    make
+
+run make install
+    make install
+
+make a link from the install folder to /Applications, where most applications are run from
+    ln -s /usr/local/bin/xmj /Applications/XMJ
+
+
+Some refining is still needed:
+1) XMJ will appear under Applications in Finder, but not in Lanchpad - it might need to be packaged in a certain way to appear correctly there - I might figure it out later
+
+    I've tried to change the DESTDIR and BINDIR in both Makefile to "/Applications" and "". This will installs the 3 files there, but when I start a game it throws an error "server failed to start", which is not the case if I use the ln from the /usr/local/bin - any idea why? Is the application trying to find a specific something in /usr/local/bin?
+
+    The other drawback of make to /Applications of course is that the mj-server and the mj-player appear in there, too, when they should be invisible.
+
+2) The application won't show the correct icon, just a simple icon terminal-like with "exec" in it. It might need to be packaged into a XMJ.app, but I don't know the way to do this yet, if I get to it, I will let you know.
+
+3) For some reason the tiles played by others appear with a yellow background, 
+

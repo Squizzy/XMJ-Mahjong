@@ -1,0 +1,39 @@
+typedef union _PMsgUnion {
+  /* Note that this type field relies on the fact that all
+     messages have type as their first field */
+PlayerMsgType type;
+PMsgSaveStateMsg savestate;
+PMsgLoadStateMsg loadstate;
+PMsgConnectMsg connect;
+PMsgRequestReconnectMsg requestreconnect;
+PMsgAuthInfoMsg authinfo;
+PMsgNewAuthInfoMsg newauthinfo;
+PMsgDisconnectMsg disconnect;
+PMsgDeclareSpecialMsg declarespecial;
+PMsgRequestPauseMsg requestpause;
+PMsgReadyMsg ready;
+PMsgDiscardMsg discard;
+PMsgNoClaimMsg noclaim;
+PMsgPungMsg pung;
+PMsgFormClosedPungMsg formclosedpung;
+PMsgKongMsg kong;
+PMsgDeclareClosedKongMsg declareclosedkong;
+PMsgAddToPungMsg addtopung;
+PMsgQueryMahJongMsg querymahjong;
+PMsgChowMsg chow;
+PMsgFormClosedChowMsg formclosedchow;
+PMsgDeclareWashOutMsg declarewashout;
+PMsgMahJongMsg mahjong;
+PMsgPairMsg pair;
+PMsgFormClosedPairMsg formclosedpair;
+PMsgShowTilesMsg showtiles;
+PMsgSpecialSetMsg specialset;
+PMsgFormClosedSpecialSetMsg formclosedspecialset;
+PMsgSetPlayerOptionMsg setplayeroption;
+PMsgSetGameOptionMsg setgameoption;
+PMsgQueryGameOptionMsg querygameoption;
+PMsgListGameOptionsMsg listgameoptions;
+PMsgChangeManagerMsg changemanager;
+PMsgSendMessageMsg sendmessage;
+PMsgSwapTileMsg swaptile;
+} PMsgUnion;
