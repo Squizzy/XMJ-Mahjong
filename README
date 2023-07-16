@@ -36,3 +36,72 @@ Reason is expected to be due to gtk+ / glibc but not exactly idenfied yet.
 Any help welcome.
 
 ===
+
+1) make it an Apple app bundle:
+
+follow the instructions from Hayden Schiff under:
+https://stackoverflow.com/questions/1596945/building-osx-app-bundle
+
+note on the little launcher script at the end (eg called xmj-script): this is a text file that need to be made executable to be run by the app.
+I am not sure this is the most secure option, but in a terminal, using "chmod 755 xmj-script" solves this.
+
+
+The Info.plist (case sensitive) at the time of writing contains the text:
+
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>CFBundleGetInfoString</key>
+  <string>XMJ Mahjong (c) by Julian Bradfield</string>
+  <key>CFBundleExecutable</key>
+  <string>xmj-script</string>
+  <key>CFBundleIdentifier</key>
+  <string>(c) by Julian Bradfield</string>
+  <key>CFBundleName</key>
+  <string>XMJ Mahjong</string>
+  <key>CFBundleIconFile</key>
+  <string>xmj.icns</string>
+  <key>CFBundleShortVersionString</key>
+  <string>1.16</string>
+  <key>CFBundleInfoDictionaryVersion</key>
+  <string>6.0</string>
+  <key>CFBundlePackageType</key>
+  <string>APPL</string>
+  <key>IFMajorVersion</key>
+  <integer>1</integer>
+  <key>IFMinorVersion</key>
+  <integer>16</integer>
+</dict>
+</plist>
+
+
+
+
+2) make the xmj.icns from the xmj.ico:
+
+follow the instructions under:
+(instead if calling the folder "myicon.iconset" call it "xmj.iconset")
+
+"
+1. Create a 1024x1024 base image.
+2. Use free/open source GIMP http://gimp.org
+3. Like and subscribe!
+4. Save images of the following file names and sizes in a folder called myicon.iconset on your Desktop
+icon_512x512@2x.png 1024 x 1024
+icon_512x512.png  512 x 512
+icon_256x256@2x.png 512 x 512
+icon_256x256.png  256 x 256
+icon_128x128@2x.png 256 x 256
+icon_128x128.png  128 x 128
+icon_32x32@2x.png  64 x 64
+icon_32x32.png   32 x 32
+icon_16x16@2x.png  32 x 32
+icon_16x16.png   16 x 16
+5. Open a terminal (CMD+Space, type "Terminal", press Enter)
+6. In the terminal, write:
+cd Desktop; iconutil -c icns myicon.iconset
+7. Press enter and wait a little.
+Happy iconing!
+This tutorial shows you how to easily make a big ICNS icon. Useful, since the icon maker is no longer available with Xcode.
+How to create own custom icon files with extension .ICNS in Mac OS X. This uses no special software other than an image editing program like GIMP or Photoshop."
