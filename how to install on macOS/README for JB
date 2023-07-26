@@ -1,0 +1,264 @@
+Instructions to compile on MacOS (Tested up to Ventura to date):
+
+
+1) Prepare the code
+
+i) Download the source of 1.16 from https://mahjong.julianbradfield.org/
+ii) Decompress the tar.gz (e.g. by double clicking in \finder)
+iii) In a terminal, go to the folder that was created by the decompression (the working directory)
+
+iv) Some essential changes in the code needed for macOS:
+a) change default port number
+As Apple has now fixed its use of port 5000 for some of its functionality, change the default port to 4000 (for example)
+- in gui.c:
+change
+    `char address[256] = "localhost:5000";`
+to 
+    `char address[256] = "localhost:4000";`
+
+and change
+    `if ( strcmp(redirected ? origaddress : address,"localhost:5000") != 0 ) {`
+to
+    `if ( strcmp(redirected ? origaddress : address,"localhost:4000") != 0 ) {`
+
+- in controller.c AND in greedy.c:
+change
+  `char *address = ":5000";`
+to
+  `char *address = ":4000";`
+
+
+b) Ensure mj-player and mj-server can be found in the App Bundle:
+We also need mj-player and mj-server to be discovered in the same folder as the executable xmj when it is in the macOS app bundle. (same folder for ease of use but adjust accordingly if placing somewhere else)
+So for the purpose of the macOS app bundle only:
+
+- in gui.c:
+somewhere above the two changes below, as a global define for the file:
+ `#define macOS`
+
+then
+change
+    `strcpy(cmd, "mj-server --id-order-seats --server ");`
+to
+```
+  #ifndef macOS
+      strcpy(cmd, "mj-server --id-order-seats --server ");
+  #else
+      strcpy(cmd, "./mj-server --id-order-seats --server ");
+  #endif
+```
+
+and also:
+change:
+	`strcpy(cmd,"mj-player --server ");`
+
+to 
+```
+    #ifndef macOS
+        strcpy(cmd,"mj-player --server ");
+    #else
+        strcpy(cmd,"./mj-player --server ");
+    #endif
+```
+
+This concludes the essential code changes - could be done in a smarter way, presumably.
+
+
+
+2) Build the executables (xmj, mj-player, mj-server)
+
+i) Install Homebrew (https://brew.sh/): 
+
+    `/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"`
+
+ii) install gtk2:
+    `brew install gtk+`
+
+iii) install pkg-config
+    `brew install pkg-config`
+
+(using brew for the above two makes sure the linked libraries can be copied in the last step. If other methods were used to install these, the needed libraries might not copy...)
+
+iv) run make
+    `make`
+
+
+DO NOT DO THE NEXT TWO STEPS, WE WILL CREATE A macOS APP BUNDLE. 
+Running them causes issues in execution!
+-*-*-
+DO NOT run make install
+    `make install`
+
+DO NOT make a link from the install folder to /Applications, where most applications are run from
+    `ln -s /usr/local/bin/xmj /Applications/XMJ`
+-*-*-
+
+
+
+-*-*-
+known bug in MacOS (which we have not yet manage to fix)
+faces up tiles from other players appear with a yellow background instead of the programmed colour.
+Reason is expected to be due to gtk+ / glibc but not exactly idenfied yet.
+Any help welcome.
+-*-*-
+
+
+3) Create the Apple app bundle:
+Apple apps that appear in Launchpad are generally App Bundles.
+An App bundler is a folder tree containing the executable, some resources such as the iconset.
+In the case of XMJ, it needs to also contain the tilesets for the game, and will contain the linked librairies.
+
+
+a) create the folder `XMJ mahjong.app`
+This is the App bundle.
+(from Finder, it is not seen as a normal folder, but can be navigated into by right clicking on it and then selecting "show package contents")
+
+b) under `XMJ Mahjong` create a folder `Contents`
+
+c) Info.plist
+
+i) under `XMJ Mahjong.app/Contents` then create a file called `Info.plist` (case sensitive name)
+    `touch Info.plist`
+
+ii) edit Info.plist with a text editor (eg textedit) and include the following content
+'''
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>CFBundleGetInfoString</key>
+  <string>XMJ Mahjong (c) 2000-now by Julian Bradfield</string>
+  <key>CFBundleExecutable</key>
+  <string>xmj-script</string>
+  <key>CFBundleIdentifier</key>
+  <string>com.xmj-mahjong.www</string>
+  <key>CFBundleName</key>
+  <string>XMJ Mahjong</string>
+  <key>CFBundleIconFile</key>
+  <string>xmj.icns</string>
+  <key>CFBundleShortVersionString</key>
+  <string>1.16</string>
+  <key>CFBundleInfoDictionaryVersion</key>
+  <string>6.0</string>
+  <key>CFBundlePackageType</key>
+  <string>APPL</string>
+  <key>IFMajorVersion</key>
+  <integer>1</integer>
+  <key>IFMinorVersion</key>
+  <integer>16</integer>
+</dict>
+</plist>
+'''
+
+( this was done following the instructions from Hayden Schiff under:
+https://stackoverflow.com/questions/1596945/building-osx-app-bundle
+Some improvements are probably possible - IFMajor and IFMinor version seem to be deprecated for example.)
+
+
+d) mini script (seemed not needed in this case)
+This was a recommendation from Hayden in the link above
+
+i) under `XMJ Mahjong.app/Contents/` create a folder `MacOS`
+
+ii) under `XMJ Mahjong.app/Contents/MacOS` create the script file:
+    `touch xmj-script`
+
+iii) add to the file the textual content:
+    `#!/bin/bash
+    cd "${0%/*}"
+    ./xmj`
+
+iv) make this script executable
+    `chmod +x xmj-script`.
+
+
+
+4) make the iconset for the app bundle
+
+macOS app bundle needs a specific file (.icns) containing multiple icon resolutions. Thankfully it is easy to create:
+make the xmj.icns from the xmj.ico provided with the source:
+
+a) method 1, manual:
+i) create a folder called xmj.iconset
+ii) in it, create multiple png files with the following resolution an names(some repeat with different names): 
+
+(Ideally start from a 1024x1024 base image - but here we don't have it).
+using a tool such as GIMP http://gimp.org create the following images resized from the original - all square:
+icon_1024x1024x.png 1024 x 1024
+icon_512x512@2x.png 1024 x 1024
+icon_512x512.png  512 x 512
+icon_256x256@2x.png 512 x 512
+icon_256x256.png  256 x 256
+icon_128x128@2x.png 256 x 256
+icon_128x128.png  128 x 128
+icon_32x32@2x.png  64 x 64
+icon_32x32.png   32 x 32
+icon_16x16@2x.png  32 x 32
+icon_16x16.png   16 x 16
+
+iii) in a terminal, run the following apple command on the folder:
+    `iconutil -c icns myicon.iconset`
+
+
+b) Alternatively there are some very capable apps like "App Icon Producer", free on the App Store.
+
+in the end, you will end up with an iconset `xmj.icns`
+
+
+
+5) complete the App Bundle tree, which should end up like this:
+(copy the `tiles` folders from the source tree, as is)
+
+XMJ Mahjong.app/
+    Info.plist
+    MacOS/
+        xmj
+        mj-player
+        mj-server
+        xmj-script
+        tiles_numbered/
+            (*.xpm)
+        tiles_small/
+            (*.xpm)
+        tiles_v1/
+            (*.xpm)
+        fallbacktiles/
+            (*.xpm)
+    Resources/
+        xmj.icns
+
+
+
+6) Finally, include all linked libraries in the bundle
+
+The application has used linked librairies (eg gkt+). This makes it not very portable. 
+In order to make sure it is, an app can make sure the App Bundle includes all libraries it depends on to place in the "Applications" folder, so it can be shared with someone who hasn't installed all the brewed files.
+
+The app `dylibbundler` will:
+- find all the libraries used for the compilation of the executables, 
+- copy them into the bundle (here, creating a new folder `libs` under `XMJ Mahjong.app/Contents/`), 
+- points the executables to these versions:
+
+a) download dylibbundler:
+    `brew install dylibbundler`
+
+b) run the app against each executable.
+For example, when in terminal we are in the same folder as the app bundle:
+(above "XMJ Mahjong.app"), use:
+    `/usr/local/bin/dylibbundler  -b  -p ./XMJ\ Mahjong.app/Contents/libs -x ./XMJ\ Mahjong.app/Contents/MacOS/xmj -d ./XMJ\ Mahjong.app/Contents/libs -cd -ns -of`
+
+    `/usr/local/bin/dylibbundler  -b  -p ./XMJ\ Mahjong.app/Contents/libs -x ./XMJ\ Mahjong.app/Contents/MacOS/mj-player -d ./XMJ\ Mahjong.app/Contents/libs -cd -ns -of`
+
+    `/usr/local/bin/dylibbundler  -b  -p ./XMJ\ Mahjong.app/Contents/libs -x ./XMJ\ Mahjong.app/Contents/MacOS/mj-server -d ./XMJ\ Mahjong.app/Contents/libs -cd -ns -of`
+
+(I have not checked in the last two are needed, probably not, as they did not seem to pull any non-standard linked libraries)
+
+
+
+6) On app source code update
+i) recompile the executables
+ii) replace the executables (xmj,mj-server, mj-player) the `XMJ Mahjong/Contents/MacOS` folder
+iii) re-run the `dylibbundle` on the 3 files
+
+
+This is it, the app bundle can now be copied into the Applications folder and should run
